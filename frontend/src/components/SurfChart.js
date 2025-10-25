@@ -1,6 +1,27 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Line } from 'chart.js';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const SurfChart = ({ stationId }) => {
   const [data, setData] = useState([]);
