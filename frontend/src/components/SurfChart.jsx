@@ -29,7 +29,8 @@ const SurfChart = ({ stationId }) => {
 
   useEffect(() => {
     setLoading(true);
-    axios.get(`/api/surf-data/${stationId}`)
+    const apiUrl = import.meta.env.VITE_API_URL || '';
+    axios.get(`${apiUrl}/api/surf-data/${stationId}`)
       .then(response => {
         setData(response.data.all || []);
         setLoading(false);

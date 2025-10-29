@@ -16,7 +16,8 @@ function App() {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get(`/api/surf-data/${selectedStation}`);
+        const apiUrl = import.meta.env.VITE_API_URL || '';
+        const response = await axios.get(`${apiUrl}/api/surf-data/${selectedStation}`);
         setCurrentData(response.data.latest);
       } catch (err) {
         setError(err.response?.data?.error || 'Failed to fetch data');
