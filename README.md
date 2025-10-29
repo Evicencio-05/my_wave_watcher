@@ -27,7 +27,7 @@ A web app to visualize real-time surf conditions (wave height, period, wind spee
 4. Visit `http://localhost:5173`.
 
 ## Live Demo
-[Insert Vercel/AWS link]
+[Vercel Live Demo](https://my-wave-watcher.vercel.app/)
 
 ## Motivation
 As a daily Surfline user and surfer, I built this to enhance surf forecasting with real-time data analytics.
