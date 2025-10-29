@@ -1,15 +1,20 @@
 #!/usr/bin/env bash
-# Build script for Render deployment
+set -e  # Exit on error
 
-# Install backend dependencies
+echo "📦 Installing backend dependencies..."
 cd backend
 npm install
 
-# Install frontend dependencies and build
+echo "📦 Installing frontend dependencies..."
 cd ../frontend
 npm install
+
+echo "🏗️  Building frontend..."
 npm run build
 
-# Move built frontend to backend public folder
+echo "📁 Copying frontend build to backend/public..."
 mkdir -p ../backend/public
 cp -r dist/* ../backend/public/
+
+echo "✅ Build complete!"
+ls -la ../backend/public/
