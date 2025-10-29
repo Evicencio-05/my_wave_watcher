@@ -5,29 +5,66 @@ const SurfData = require('../models/SurfData');
 async function fetchBuoyData(stationId) {
   try {
     const response = await axios.get(`https://www.ndbc.noaa.gov/data/realtime2/${stationId}.txt`);
-    const lines = response.data.split('\n').slice(1); // Skip header
+    const lines = response.data.split('\n').slice(2); // Skip both header lines
     const dataPoints = [];
 
     lines.forEach(line => {
-      if (line.trim()) {
+      if (line.trim() && !line.startsWith('#')) {
         const columns = line.trim().split(/\s+/); // Whitespace-delimited
-        if (columns.length >= 10) { // Ensure enough columns
-          const timestamp = new Date(
-            `20${columns[0]}-${columns[1].padStart(2, '0')}-${columns[2].padStart(2, '0')}T${columns[3].padStart(2, '0')}:${columns[4].padStart(2, '0')}:00Z`
-          ); // YY MM DD HH MM -> ISO Date
-          const waveHeight = parseFloat(columns[6]) || 0; // Significant wave height (col 7, index 6)
-          const wavePeriod = parseFloat(columns[7]) || 0; // Dominant period (col 8, index 7)
-          const windSpeed = parseFloat(columns[9]) || 0; // Wind speed (col 10, index 9)
-          const windDirection = columns[8] || 'N/A'; // Wind direction (col 9, index 8)
+        if (columns.length >= 14) { // Ensure enough columns
+          // Parse date: YYYY MM DD hh mm (columns 0-4)
+          const year = parseInt(columns[0]);
+          const month = parseInt(columns[1]) - 1; // JavaScript months are 0-indexed
+          const day = parseInt(columns[2]);
+          const hour = parseInt(columns[3]);
+          const minute = parseInt(columns[4]);
+          
+          // Create UTC date
+          const timestamp = new Date(Date.UTC(year, month, day, hour, minute));
+          
+          // Validate the timestamp
+          if (isNaN(timestamp.getTime())) {
+            console.warn(`Invalid timestamp for data: ${columns.slice(0, 5).join(' ')}`);
+            return; // Skip this data point
+          }
 
-          dataPoints.push({
-            location: stationId,
-            timestamp,
-            waveHeight,
-            wavePeriod,
-            windSpeed,
-            windDirection
-          });
+          // Parse data columns (handle "MM" for missing values)
+          const parseValue = (val) => (val === "MM" || val === "mm") ? null : parseFloat(val);
+          
+          const windDirection = parseValue(columns[5]);
+          const windSpeed = parseValue(columns[6]);
+          const gustSpeed = parseValue(columns[7]);
+          const waveHeight = parseValue(columns[8]);
+          const dominantWavePeriod = parseValue(columns[9]);
+          const averageWavePeriod = parseValue(columns[10]);
+          const dominantWaveDirection = parseValue(columns[11]);
+          const seaLevelPressure = parseValue(columns[12]);
+          const airTempC = parseValue(columns[13]);
+          const surfaceSeaTempC = parseValue(columns[14]);
+          const dewPoint = columns.length > 15 ? parseValue(columns[15]) : null;
+          const stationVisibility = columns.length > 16 ? parseValue(columns[16]) : null;
+          const pressureTendency = columns.length > 17 ? parseValue(columns[17]) : null;
+
+          // Only push if we have at least some wave data
+          if (waveHeight !== null || dominantWavePeriod !== null) {
+            dataPoints.push({
+              location: stationId,
+              timestamp,
+              windDirection,
+              windSpeed,
+              gustSpeed,
+              waveHeight,
+              dominantWavePeriod,
+              averageWavePeriod,
+              dominantWaveDirection,
+              seaLevelPressure,
+              airTempC,
+              surfaceSeaTempC,
+              dewPoint,
+              stationVisibility,
+              pressureTendency
+            });
+          }
         }
       }
     });
@@ -35,9 +72,11 @@ async function fetchBuoyData(stationId) {
     // Store in MongoDB (latest point for simplicity; extend for all)
     if (dataPoints.length > 0) {
       await SurfData.deleteMany({ location: stationId }); // Clear old for demo
+      console.log("Old data deleted.")
       await SurfData.insertMany(dataPoints);
+      console.log("New data added")
     }
-
+    console.log("Data points: ", dataPoints);
     return dataPoints;
   } catch (error) {
     console.error('Error fetching buoy data:', error.message);

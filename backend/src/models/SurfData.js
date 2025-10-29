@@ -12,27 +12,68 @@ const surfDataSchema = new mongoose.Schema({
     required: true, // Date/time of measurement
     index: true // Optimize time-based queries
   },
-  waveHeight: {
-    type: Number, // Significant wave height in meters
-    required: true,
-    min: 0 // Ensure non-negative
-  },
-  wavePeriod: {
-    type: Number, // Dominant wave period in seconds
-    required: true,
-    min: 0
+  windDirection: {
+    type: Number,
+    default: null
   },
   windSpeed: {
-    type: Number, // Wind speed in meters/second
-    required: true,
-    min: 0
+    type: Number,
+    default: null
   },
-  windDirection: {
-    type: String, // Wind direction (e.g., "NW", "N/A")
-    required: true
-  }
+  gustSpeed: {
+    type: Number,
+    default: null
+  },
+  waveHeight: {
+    type: Number,
+    default: null
+  },
+  dominantWavePeriod: {
+    type: Number,
+    default: null,
+    alias: 'wavePeriod' // Alias for backward compatibility
+  },
+  averageWavePeriod: {
+    type: Number,
+    default: null
+  },
+  dominantWaveDirection: {
+    type: Number,
+    default: null
+  },
+  seaLevelPressure: {
+    type: Number,
+    default: null
+  },
+  airTempC: {
+    type: Number,
+    default: null
+  },
+  surfaceSeaTempC: {
+    type: Number,
+    default: null
+  },
+  dewPoint: {
+    type: Number,
+    default: null
+  },
+  stationVisibility: {
+    type: Number,
+    default: null
+  },
+  pressureTendency: {
+    type: Number,
+    default: null
+  },
 }, {
-  timestamps: true // Auto-add createdAt/updatedAt
+  timestamps: true, // Auto-add createdAt/updatedAt
+  toJSON: { virtuals: true }, // Include virtuals in JSON output
+  toObject: { virtuals: true } // Include virtuals in object output
+});
+
+// Virtual property for backward compatibility with frontend
+surfDataSchema.virtual('wavePeriod').get(function() {
+  return this.dominantWavePeriod;
 });
 
 // Compound index for efficient location+time queries

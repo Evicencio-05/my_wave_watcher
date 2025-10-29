@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './styles/tailwind.css';
-import LocationSelector from './components/LocationSelector';
-import StatsPanel from './components/StatsPanel';
-import SurfChart from './components/SurfChart';
+import LocationSelector from './components/LocationSelector.jsx';
+import StatsPanel from './components/StatsPanel.jsx';
+import SurfChart from './components/SurfChart.jsx';
 
 function App() {
   const [selectedStation, setSelectedStation] = useState('46087');

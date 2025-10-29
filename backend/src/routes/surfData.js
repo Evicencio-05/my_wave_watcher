@@ -6,6 +6,7 @@ const { fetchBuoyData } = require('../services/dataService');
 router.get('/:location', async (req, res) => {
   const { location } = req.params;
   const data = await fetchBuoyData(location);
+  console.log("Buoy Data recieved.", data)
   if (data.length > 0) {
     res.json({ latest: data[data.length - 1], all: data });
   } else {
